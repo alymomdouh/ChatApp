@@ -1,18 +1,14 @@
 ﻿using ChatApp.Data;
+using ChatApp.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ChatApp
 {
@@ -41,7 +37,7 @@ namespace ChatApp
             services.AddDefaultIdentity<IdentityUser>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-
+            services.AddSignalRCore();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -65,7 +61,10 @@ namespace ChatApp
             app.UseCookiePolicy();
 
             app.UseAuthentication();
-
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ChatHub>("/Home/Index");
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
