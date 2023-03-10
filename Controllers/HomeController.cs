@@ -1,18 +1,45 @@
-﻿using ChatApp.Models;
+﻿using ChatApp.Data;
+using ChatApp.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ChatApp.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly ApplicationDbContext applicationDbContext;
+        private readonly UserManager<AppUser> userManager;
+
+        public HomeController(ApplicationDbContext _applicationDbContext, UserManager<AppUser> _userManager)
         {
-            return View();
+            applicationDbContext = _applicationDbContext;
+            userManager = _userManager;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var currentUser = await userManager.GetUserAsync(User);
+            ViewBag.currentUser = currentUser;
+            var messages = await applicationDbContext.Messages.ToListAsync();
+            return View(messages);
+        }
+        public async Task<IActionResult> Create(Message message)
+        {
+            if (ModelState.IsValid)
+            {
+                message.UserName = User.Identity.Name;
+                var sender = await userManager.GetUserAsync(User);
+                message.UserId = sender.Id;
+                await applicationDbContext.Messages.AddAsync(message);
+                await applicationDbContext.SaveChangesAsync();
+                return Ok();
+            }
+            return BadRequest();
         }
 
         public IActionResult Privacy()

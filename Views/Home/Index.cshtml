@@ -1,8 +1,89 @@
-﻿@{
+﻿@*@{
+        ViewData["Title"] = "Home Page";
+    }
+
+    <div class="text-center">
+        <h1 class="display-4">Welcome</h1>
+        <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    </div>*@
+
+@model List<ChatApp.Models.Message>
+@{
     ViewData["Title"] = "Home Page";
+    var UserName = User.Identity.Name;
+}
+<div class="jumbotron bg-light">
+    <h2 class="text-center text-primary">
+        <i class="fab fa-facebook-messenger"></i>&nbsp; public Talk
+    </h2>
+    <div class="row">
+        <div class="col-md-12" id="chat">
+            @if (Model.Count > 0)
+            {
+                @foreach (var message in Model.OrderBy(m => m.When))
+                {
+                    string containCalss, timePostion, textAlign, contColor, offset;
+                    if (UserName == message.UserName)
+                    {
+                        containCalss = "container darker";
+                        timePostion = "time-right text-light";
+                        textAlign = "text-right text-white";
+                        contColor = "bg-primary";
+                        offset = "col-md6 offset-md-6";
+                    }
+                    else
+                    {
+                        containCalss = "container";
+                        timePostion = "time-left";
+                        textAlign = "text-left";
+                        contColor = "bg-light";
+                        offset = "";
+                    }
+                    <div class="row">
+                        <div class="@offset">
+                            <div class="@containCalss @contColor">
+                                <p class="sender @textAlign ">@message.UserName</p>
+                                <p class=" @textAlign ">@message.Text</p>
+                                <p class=" @timePostion ">@message.When.ToString()</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="col-md-12">
+            <form asp-action="Create" data-ajax-begin="clearInputField"
+                  data-ajax-complete="" data-ajax-failure="alert('Fail')"
+                  data-ajax-success="sendMessage" data-ajax="true"
+                  data-ajax-method="Post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <input name="text" type="text" class="form-control" id="messageText" />
+
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Send" id="submitButton" class="btn btn-primary" />
+
+                </div>
+                <input type="hidden" value="@UserName" name="username" />
+
+            </form>
+        </div>
+    </div>
+</div>
+@if (User.Identity.IsAuthenticated)
+{
+    <script>
+    const userName = "@ViewBag.currentUser"
+    </script>
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@section scripts{
+    <script src="~/signalr/signalr.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery-unobtrusive-ajax.min.js"></script>
+    <script src="~/js/chat.js"></script>
+    <script src="~/js/signalrReqHandler.js"></script>
+    <script src="~/js/signrReqHandler.js"></script>
+    <script src="~/js/site.js"></script>
+
+}
